@@ -1,0 +1,14 @@
+# install 時に生成される「選択中プロファイルへのリンク」
+# （マシンごとに work/private が変わるので git では管理しない）
+shared/nvim/lua/profile.lua
+
+# ローカル専用・秘密情報（APIキー/トークン/社内ホスト名など）
+# *.local という名前にすれば git に乗らない、という運用ルール
+*.local
+
+# install スクリプトが作るバックアップ
+*.bak
+
+# OS が勝手に作るゴミ
+.DS_Store
+Thumbs.db
