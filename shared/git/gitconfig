@@ -33,8 +33,8 @@
 	unstage = reset HEAD --
 
 [include]
-	# ↓ 仕事/プライベートの差分（user.name/email・社内設定など）。
-	#   install 時に profiles/<work|private>/git/profile.gitconfig が
-	#   ~/.config/git/profile.gitconfig としてリンクされる。
+	# ↓ このマシン固有の設定（user.name/email など）。
+	#   ~/.config/git/local.gitconfig を置くと読み込まれる（git管理外でOK）。
+	#   雛形は shared/git/local.gitconfig.example を参照。
 	#   ファイルが無くても git はこの include を黙って無視する。
-	path = ~/.config/git/profile.gitconfig
+	path = ~/.config/git/local.gitconfig

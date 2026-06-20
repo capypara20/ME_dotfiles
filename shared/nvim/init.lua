@@ -17,7 +17,8 @@ require("config.keymaps") -- 共通キーマップ
 require("config.lazy")    -- プラグインマネージャ(lazy.nvim)を起動
 
 -- ------------------------------------------------------------------
--- 環境固有の上書き（無くてもエラーにしない）
--- profiles/<work|private>/nvim/profile.lua が install 時にリンクされる
+-- このマシン固有の上書き（無くてもエラーにしない）
+--   lua/local.lua を置くと、ここで最後に読み込まれる（git管理外）。
+--   雛形は lua/local.lua.example を参照。
 -- ------------------------------------------------------------------
-pcall(require, "profile")
+pcall(require, "local")

@@ -191,3 +191,8 @@ alias ime-check="gsettings get org.gnome.desktop.input-sources sources"
 . "/home/roze123/.deno/env"
 export DENO_INSTALL="$HOME/.deno"
 export PATH="$DENO_INSTALL/bin:$PATH"
+
+# ==================================================================
+# このマシン固有のローカル設定（git管理外。あれば読み込む）
+# ==================================================================
+[ -f "$HOME/.bashrc.local" ] && . "$HOME/.bashrc.local"

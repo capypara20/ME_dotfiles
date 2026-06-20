@@ -1,0 +1,11 @@
+-- このファイルを local.lua にコピーして、このマシンだけの設定を書く。
+--   cp local.lua.example local.lua
+-- local.lua は git 管理外（.gitignore 済み）。会社支給PCのように
+-- このリポジトリへ push できない環境でも、安心して手元で編集できる。
+
+-- 例) このマシンだけのカラースキーム
+-- pcall(vim.cmd.colorscheme, "tokyonight-night")
+
+-- 例) このマシンだけのオプション・キーマップ
+-- vim.opt.relativenumber = false
+-- vim.keymap.set("n", "<leader>x", "<cmd>echo 'local!'<cr>")

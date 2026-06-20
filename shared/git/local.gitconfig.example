@@ -1,0 +1,17 @@
+# このファイルを ~/.config/git/local.gitconfig として置くと、
+# 共通の ~/.gitconfig から自動で include される（git管理外でOK）。
+#   例: cp shared/git/local.gitconfig.example ~/.config/git/local.gitconfig
+#
+# マシンごとに中身を変える:
+#   - プライベートPC → 個人の名前/メール
+#   - 会社支給PC     → 会社の名前/メール（このファイルは push しないので安全）
+
+[user]
+	name = YOUR NAME
+	email = you@example.com
+	# 公開リポジトリ中心なら GitHub の noreply メール推奨:
+	#   xxxx+username@users.noreply.github.com
+
+# 会社固有の設定例（必要なら）
+# [url "git@ghe.company.example:"]
+#	insteadOf = https://ghe.company.example/

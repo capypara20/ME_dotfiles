@@ -1,71 +1,73 @@
 # ME_dotfiles
 
-仕事用PCとプライベートPCで設定を使い分けるための dotfiles。
-**「OS軸」×「プロファイル軸(work / private)」** の2軸で管理する。
+複数のPC（プライベート / 会社支給）で共有する dotfiles。
 
-## 考え方
+## 方針
 
-- **共通の土台**は1つだけ持つ（`shared/`）。
-- 環境ごとの差分は、できるだけ**小さな入口ファイル**に閉じ込める。
-- 「どの環境か」は **プロファイル**(`work` / `private`)で明示的に選ぶ。
-  - OSが勝手に見る固定パスへ、リポジトリ内の実体を**シンボリックリンク**で配置する。
+- **共通設定は1か所**にまとめる（`shared/`、OS固有は `linux/` `windows/`）。
+  各マシンへはシンボリックリンクで配置する。
+- **そのマシンだけの差分**は、各設定が読み込む
+  **ローカル上書きファイル（git管理外）** に置く。
+  - 会社支給PCのように **このリポジトリへ push できない（clone専用）環境**でも、
+    ローカル上書きファイルはそのマシンに手で置くだけなので問題なく使える。
+  - 秘密情報（メール・トークン・社内ホスト名など）も自然とリポジトリ外に保てる。
+- 差分が無いマシンは共通設定だけで完結する（ローカル上書きは“あれば読む”opt-in）。
 
 ## ディレクトリ構成
 
 ```
 dotfiles/
-├─ install.sh / install.ps1   # プロファイルを決めてリンクを貼るインストーラ
-├─ shared/                     # OS非依存・環境非依存の「共通の土台」
-│  └─ nvim/                    # = ~/.config/nvim（Windowsは %LOCALAPPDATA%\nvim）
-│     ├─ init.lua              # エントリポイント。末尾で require("profile")
-│     └─ lua/
-│        ├─ config/            # options / keymaps / lazy(プラグインマネージャ)
-│        ├─ plugins/           # プラグイン定義（ファイルを足すだけで増やせる）
-│        └─ profile.lua        # ← install時に生成。選択中プロファイルへのリンク（git管理外）
-├─ profiles/                   # プロファイル固有の上書き
-│  ├─ work/nvim/profile.lua    #   仕事用の差分
-│  └─ private/nvim/profile.lua #   プライベート用の差分
-├─ linux/                      # Linux固有（.bashrc など）
-└─ windows/                    # Windows固有（PowerShell profile など）
+├─ install.sh / install.ps1   # shared と OS固有をリンクするインストーラ
+├─ shared/                     # OS非依存の共通設定
+│  ├─ nvim/                    # = ~/.config/nvim（Win: %LOCALAPPDATA%\nvim）
+│  │  ├─ init.lua              # 末尾で require("local")（あれば）
+│  │  └─ lua/
+│  │     ├─ config/ plugins/   # 共通設定・プラグイン
+│  │     ├─ local.lua          # ← マシン固有の上書き（git管理外, 任意）
+│  │     └─ local.lua.example  # ↑ の雛形
+│  ├─ tmux/tmux.conf           # = ~/.tmux.conf（末尾で ~/.tmux.local.conf を読む）
+│  └─ git/
+│     ├─ gitconfig             # = ~/.gitconfig（~/.config/git/local.gitconfig を include）
+│     └─ local.gitconfig.example
+├─ linux/                      # Linux固有（.bashrc 等。末尾で ~/.bashrc.local を読む）
+└─ windows/                    # Windows固有（PowerShell profile 等）
 ```
+
+## ローカル上書きファイル一覧
+
+| 設定 | 共通の実体 | ローカル上書き（git管理外） |
+|------|-----------|------------------------------|
+| neovim | `shared/nvim/` | `~/.config/nvim/lua/local.lua` |
+| tmux   | `shared/tmux/tmux.conf` | `~/.tmux.local.conf` |
+| git    | `shared/git/gitconfig` | `~/.config/git/local.gitconfig` |
+| bash   | `linux/.bashrc` | `~/.bashrc.local` |
 
 ## 使い方
 
 ### Linux
-
 ```bash
-# プロファイルを環境変数で明示（おすすめ）
-DOTFILES_PROFILE=work bash install.sh
-
-# もしくは引数なしで実行 → 対話で work/private を聞かれる
+# 安定した場所に clone（symlink がここを指すので場所は固定で）
+git clone <repo> ~/dotfiles && cd ~/dotfiles
 bash install.sh
+
+# 必要に応じてローカル上書きを作成（雛形をコピーして編集）
+cp shared/nvim/lua/local.lua.example shared/nvim/lua/local.lua
+cp shared/git/local.gitconfig.example ~/.config/git/local.gitconfig
+nvim   # 初回起動で lazy.nvim が自動導入される
 ```
 
 ### Windows（開発者モード or 管理者の PowerShell）
-
 ```powershell
-$env:DOTFILES_PROFILE = "work"; .\install.ps1
+git clone <repo> $HOME\dotfiles; cd $HOME\dotfiles
+.\install.ps1
+copy shared\git\local.gitconfig.example $HOME\.config\git\local.gitconfig
 ```
 
-一度実行すると、選んだプロファイルが `~/.dotfiles-profile` に記録され、
-次回以降は引数なしでも同じプロファイルが使われる。
-
-## 現在の管理対象
-
-| 設定 | 実体 | 配置先 | 環境差分 |
-|------|------|--------|----------|
-| neovim | `shared/nvim/` | `~/.config/nvim`（Win: `%LOCALAPPDATA%\nvim`） | `profile.lua` |
-| tmux | `shared/tmux/tmux.conf` | `~/.tmux.conf` | （共通のみ） |
-| git | `shared/git/gitconfig` | `~/.gitconfig` | `profiles/*/git/profile.gitconfig` |
-
 ## 設定を増やすには
-
-1. リポジトリに実体を置く（共通なら `shared/`、OS固有なら `linux/` `windows/`）。
-2. `install.sh` / `install.ps1` の「配置」セクションに `link` を1行足す。
-3. 環境で差分が出るものは、`profiles/work/...` と `profiles/private/...` に
-   それぞれ用意し、共通側からはその入口だけを読み込む（nvim の `profile.lua` が手本）。
+1. 共通なら `shared/`、OS固有なら `linux/` `windows/` に実体を置く。
+2. `install.sh` / `install.ps1` の「配置」に `link`(`Link`) を1行足す。
+3. マシンで差が出る部分は、その設定が読み込む `*.local`（git管理外）に逃がす。
 
 ## 秘密情報の扱い
-
-APIキー・トークン・社内ホスト名・SSH鍵などは **リポジトリに入れない**。
-`*.local` という名前のファイル（`.gitignore` 済み）に分離して、各マシンで手置きする。
+APIキー・トークン・社内ホスト名・SSH鍵などはリポジトリに入れない。
+上記のローカル上書きファイル（git管理外）に置く。

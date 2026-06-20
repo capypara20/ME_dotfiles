@@ -1,9 +1,9 @@
-# install 時に生成される「選択中プロファイルへのリンク」
-# （マシンごとに work/private が変わるので git では管理しない）
-shared/nvim/lua/profile.lua
+# 各マシン固有のローカル上書き（git管理しない）
+#   ~/.config/nvim は shared/nvim へのリンクなので、local.lua の実体は
+#   リポジトリ内(shared/nvim/lua/local.lua)に置かれる。これを無視する。
+shared/nvim/lua/local.lua
 
-# ローカル専用・秘密情報（APIキー/トークン/社内ホスト名など）
-# *.local という名前にすれば git に乗らない、という運用ルール
+# 「*.local」という名前のローカルファイルは一律 git 管理外にする運用
 *.local
 
 # install スクリプトが作るバックアップ

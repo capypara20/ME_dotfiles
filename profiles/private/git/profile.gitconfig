@@ -1,9 +1,0 @@
-# プライベート用の git 設定（識別情報）
-# このファイルは ~/.config/git/profile.gitconfig としてリンクされ、
-# 共通の ~/.gitconfig から include される。
-
-[user]
-	name = YOUR NAME          # ← 個人で使う表示名に変更
-	email = you@example.com   # ← 個人メールに変更
-	#   公開リポジトリ中心なら GitHub の noreply メール
-	#   (xxxx+username@users.noreply.github.com) を使うとアドレス露出を防げる
