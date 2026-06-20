@@ -1,0 +1,20 @@
+# 仕事用の git 設定（識別情報・社内向け）
+# このファイルは ~/.config/git/profile.gitconfig としてリンクされ、
+# 共通の ~/.gitconfig から include される。
+
+[user]
+	name = YOUR WORK NAME         # ← 会社で使う表示名に変更
+	email = you@company.example   # ← 会社メールに変更
+
+# 例) 社内 GitHub Enterprise を SSH 経由に書き換えたいとき
+# [url "git@ghe.company.example:"]
+#	insteadOf = https://ghe.company.example/
+
+# 例) コミット署名を使うとき
+# [commit]
+#	gpgsign = true
+# [user]
+#	signingkey = <KEYID>
+
+# 注意: トークン等の秘密情報はここに直書きせず、
+#       ~/.config/git/credentials.local など git管理外へ。

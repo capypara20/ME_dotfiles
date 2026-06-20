@@ -65,4 +65,9 @@ Link "$DotDir\shared\nvim" "$env:LOCALAPPDATA\nvim"
 # (c) プロファイル固有: neovim の差分入口 profile.lua
 Link "$DotDir\profiles\$Prof\nvim\profile.lua" "$DotDir\shared\nvim\lua\profile.lua"
 
+# (d) 共通: git（識別情報は profile 側で上書き）
+#     ※ tmux は Unix 専用のため Windows では配置しない
+Link "$DotDir\shared\git\gitconfig" "$HOME\.gitconfig"
+Link "$DotDir\profiles\$Prof\git\profile.gitconfig" "$HOME\.config\git\profile.gitconfig"
+
 Write-Host "完了！(profile=$Prof)"

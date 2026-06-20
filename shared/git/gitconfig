@@ -1,0 +1,40 @@
+# ~/.gitconfig — 共通の git 設定（OS・環境非依存）
+# 識別情報(user.name/email)など環境で変わるものは末尾の include で読み込む。
+
+[init]
+	defaultBranch = main
+
+[core]
+	# 改行コードの自動変換はしない（環境間の差分事故を防ぐ）
+	autocrlf = input
+	editor = nvim
+
+[color]
+	ui = auto
+
+[pull]
+	# pull 時に余計なマージコミットを作らない
+	ff = only
+
+[push]
+	default = simple
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+
+[alias]
+	st = status -sb
+	co = checkout
+	sw = switch
+	br = branch
+	lg = log --oneline --graph --decorate -20
+	last = log -1 HEAD
+	unstage = reset HEAD --
+
+[include]
+	# ↓ 仕事/プライベートの差分（user.name/email・社内設定など）。
+	#   install 時に profiles/<work|private>/git/profile.gitconfig が
+	#   ~/.config/git/profile.gitconfig としてリンクされる。
+	#   ファイルが無くても git はこの include を黙って無視する。
+	path = ~/.config/git/profile.gitconfig

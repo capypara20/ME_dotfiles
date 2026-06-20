@@ -50,6 +50,14 @@ $env:DOTFILES_PROFILE = "work"; .\install.ps1
 一度実行すると、選んだプロファイルが `~/.dotfiles-profile` に記録され、
 次回以降は引数なしでも同じプロファイルが使われる。
 
+## 現在の管理対象
+
+| 設定 | 実体 | 配置先 | 環境差分 |
+|------|------|--------|----------|
+| neovim | `shared/nvim/` | `~/.config/nvim`（Win: `%LOCALAPPDATA%\nvim`） | `profile.lua` |
+| tmux | `shared/tmux/tmux.conf` | `~/.tmux.conf` | （共通のみ） |
+| git | `shared/git/gitconfig` | `~/.gitconfig` | `profiles/*/git/profile.gitconfig` |
+
 ## 設定を増やすには
 
 1. リポジトリに実体を置く（共通なら `shared/`、OS固有なら `linux/` `windows/`）。

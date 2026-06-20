@@ -80,4 +80,11 @@ link "$DOTDIR/shared/nvim" "$HOME/.config/nvim"
 #     （shared/nvim/lua/profile.lua）に作られる。これは .gitignore 済み。
 link "$DOTDIR/profiles/$PROFILE/nvim/profile.lua" "$DOTDIR/shared/nvim/lua/profile.lua"
 
+# (d) 共通: tmux
+link "$DOTDIR/shared/tmux/tmux.conf" "$HOME/.tmux.conf"
+
+# (e) 共通: git（識別情報は profile 側で上書き）
+link "$DOTDIR/shared/git/gitconfig" "$HOME/.gitconfig"
+link "$DOTDIR/profiles/$PROFILE/git/profile.gitconfig" "$HOME/.config/git/profile.gitconfig"
+
 echo "完了！(profile=$PROFILE)"
