@@ -1,0 +1,137 @@
+﻿# ==================================================================
+# Windows 用 dotfiles 収集スクリプト（install.ps1 の逆方向）
+#
+# やること:
+#   今このPCで使っている設定ファイルを、dotfiles リポジトリへコピーし直す。
+#   （コピー方式なので、設定を編集しただけではリポジトリに反映されないため）
+#
+# 使い方:
+#   cd "$HOME\dotfiles"
+#   .\sync.ps1            # 取り込む
+#   .\sync.ps1 -DryRun    # 何が起きるか表示するだけ
+#   git diff              # 取り込んだ差分を確認
+#   git add -A; git commit -m "設定を更新"; git push
+# ==================================================================
+
+param(
+  [switch]$DryRun
+)
+
+$ErrorActionPreference = "Stop"
+$DotDir = $PSScriptRoot
+
+function Info($msg) { Write-Host "  $msg" }
+function Step($msg) { Write-Host "`n[$msg]" -ForegroundColor Cyan }
+function Ok($msg)   { Write-Host "  OK   $msg" -ForegroundColor Green }
+function Skip($msg) { Write-Host "  --   $msg" -ForegroundColor DarkGray }
+
+if ($DryRun) {
+  Write-Host "*** DryRun モード: 実際には何も変更しません ***" -ForegroundColor Yellow
+}
+
+$ConfigHome = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { Join-Path $HOME ".config" }
+$Docs       = [Environment]::GetFolderPath("MyDocuments")
+
+# --- 取り込み用の共通処理 --------------------------------------------
+# フォルダの場合、リポジトリ側を一度消してからコピーする。
+# （そうしないと「PCで消したファイル」がリポジトリに残り続けるため）
+function Collect($label, $src, $dst, $isDir) {
+  if (-not (Test-Path $src)) {
+    Skip "$label : $src が無いので飛ばします"
+    return
+  }
+  Info "$label : $src"
+  Info "       -> $dst"
+  if (-not $DryRun) {
+    if ($isDir) {
+      if (Test-Path $dst) { Remove-Item -Path $dst -Recurse -Force }
+      Copy-Item -Path $src -Destination $dst -Recurse -Force
+    } else {
+      $parent = Split-Path -Parent $dst
+      if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
+      Copy-Item -Path $src -Destination $dst -Force
+    }
+  }
+  Ok $label
+}
+
+# ==================================================================
+# nvim
+# ==================================================================
+Step "nvim の設定を取り込み"
+Collect "nvim" (Join-Path $ConfigHome "nvim") (Join-Path $DotDir "nvim") $true
+
+# ==================================================================
+# PowerShell プロファイル
+#   pwsh 用 と Windows PowerShell 用の両方を調べ、
+#   中身があるもののうち「最後に編集されたもの」を採用する。
+# ==================================================================
+Step "PowerShell プロファイルを取り込み"
+$ProfileCandidates = @(
+  (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")
+  (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
+)
+#   ただし中身が空のプロファイル（Windows が自動で作る空ファイルなど）は
+#   無視する。空のものを取り込むと、リポジトリの設定が消えてしまうため。
+$found = $ProfileCandidates |
+  Where-Object {
+    if (-not (Test-Path $_)) { return $false }
+    $raw = Get-Content -Path $_ -Raw -ErrorAction SilentlyContinue
+    return ($raw -and $raw.Trim().Length -gt 0)
+  } |
+  Sort-Object { (Get-Item $_).LastWriteTime } -Descending |
+  Select-Object -First 1
+
+if ($found) {
+  Collect "PowerShell profile" $found (Join-Path $DotDir "powershell\profile.ps1") $false
+} else {
+  Skip "プロファイルが見つかりません（先に install.ps1 を実行してください）"
+}
+
+# ==================================================================
+# VSCode
+# ==================================================================
+Step "VSCode の設定を取り込み"
+Collect "VSCode settings.json" (Join-Path $env:APPDATA "Code\User\settings.json") (Join-Path $DotDir "vscode\settings.json") $false
+
+# ==================================================================
+# scoop のアプリ一覧
+#   scoop export はバージョン番号まで書き出すが、それを残すと
+#   新しいPCで「古いバージョン」を入れようとしてしまう。
+#   そこで Name と Source だけに絞って保存する。
+#   グローバルインストール分（管理者権限が必要）も除外する。
+# ==================================================================
+Step "scoop のアプリ一覧を取り込み"
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+  Skip "scoop が見つかりません"
+} else {
+  $export = scoop export | ConvertFrom-Json
+
+  $buckets = @($export.buckets | ForEach-Object {
+    [ordered]@{ Name = $_.Name; Source = $_.Source }
+  })
+  $apps = @($export.apps |
+    Where-Object { $_.Info -notlike "*Global install*" } |
+    ForEach-Object { [ordered]@{ Name = $_.Name; Source = $_.Source; Info = "" } })
+
+  $out = [ordered]@{ buckets = $buckets; apps = $apps }
+  $json = $out | ConvertTo-Json -Depth 5
+
+  $AppsJson = Join-Path $DotDir "scoop\scoop-apps.json"
+  Info "アプリ $($apps.Count) 個 / バケット $($buckets.Count) 個"
+  Info "       -> $AppsJson"
+  if (-not $DryRun) {
+    # BOM なし UTF-8 で保存（scoop import が確実に読めるように）
+    $enc = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($AppsJson, $json, $enc)
+  }
+  Ok "scoop-apps.json"
+}
+
+# ==================================================================
+# 完了メッセージ
+# ==================================================================
+Write-Host "`n=== 完了 ===" -ForegroundColor Cyan
+Write-Host "次のコマンドで差分を確認してからコミットしてください:"
+Write-Host "  git -C `"$DotDir`" status"
+Write-Host "  git -C `"$DotDir`" diff"

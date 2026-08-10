@@ -1,0 +1,14 @@
+# install スクリプトが作る退避ファイル
+*.bak
+*.bak-*
+
+# このPC専用の設定（他のPCへ持っていかない）
+*.local.ps1
+*.local.sh
+*.local.lua
+local.gitconfig
+
+# OS が勝手に作るファイル
+Thumbs.db
+desktop.ini
+.DS_Store

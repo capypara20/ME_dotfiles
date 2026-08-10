@@ -1,0 +1,14 @@
+{
+    "claudeCode.preferredLocation": "panel",
+    "workbench.iconTheme": "vs-nomo-dark",
+    "explorer.compactFolders": false,
+    "explorer.excludeGitIgnore": true,
+    "explorer.fileNesting.enabled": true,
+    "hediet.vscode-drawio.resizeImages": null,
+    "glassit.alpha": 250,
+    "explorer.confirmPasteNative": false,
+    "security.promptForLocalFileProtocolHandling": false,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    }
+}

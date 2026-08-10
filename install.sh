@@ -1,41 +1,108 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # ==================================================================
-# Linux用 dotfiles インストーラ（骨組み）
+# Linux 用 dotfiles インストーラ（コピー方式）
 #
-# 役割: このリポジトリ内の設定ファイルを、OSが決め打ちで見る
-#        固定パス（~/.bashrc など）へシンボリックリンクで配置する。
+# やること:
+#   リポジトリ内の設定ファイルを、各アプリが見る場所へ「コピー」する。
 #
-# 使い方: bash install.sh
+# 使い方:
+#   git clone https://github.com/capypara20/dotfiles.git ~/dotfiles
+#   cd ~/dotfiles
+#   bash install.sh            # 配置する
+#   bash install.sh --dry-run  # 何が起きるか表示するだけ
+#
+# 逆方向（今のPCの設定をリポジトリに取り込む）は sync.sh を使う。
 # ==================================================================
 
-# このスクリプトが置かれている場所を自動で割り出す。
-# → クローン先がどこでも動くようにするための工夫。
+set -eu
+
+# このスクリプトが置かれている場所 = リポジトリの場所
 DOTDIR="$(cd "$(dirname "$0")" && pwd)"
 
-# ------------------------------------------------------------------
-# 対応表:  "本体ファイルのパス" : "配置したい固定パス"
-# 設定ファイルが増えたら、ここに1行足すだけでOK。
-# （まだ骨組みなので中身は空。これから少しずつ追加する）
-# ------------------------------------------------------------------
-declare -A LINKS=(
-  ["$DOTDIR/linux/.bashrc"]="$HOME/.bashrc"
-  # ["$DOTDIR/linux/.bash_aliases"]="$HOME/.bash_aliases"
-  # ["$DOTDIR/shared/.gitconfig"]="$HOME/.gitconfig"
-)
+# 設定ファイルの置き場所（Windows 側と揃える）
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+
+# --dry-run が付いていたら、実際の変更はしない
+DRYRUN=0
+if [ "${1:-}" = "--dry-run" ]; then
+  DRYRUN=1
+  echo "*** DryRun モード: 実際には何も変更しません ***"
+fi
+
+info() { echo "  $1"; }
+step() { echo ""; echo "[$1]"; }
+ok()   { echo "  OK   $1"; }
+skip() { echo "  --   $1"; }
 
 # ------------------------------------------------------------------
-# リンク作成本体（対応表が空なら何もしない）
+# 既存ファイルを日付つきの名前に退避してから、コピーで上書きする
+# 引数: 表示名 コピー元 コピー先
 # ------------------------------------------------------------------
-for src in "${!LINKS[@]}"; do
-  dst="${LINKS[$src]}"
-  # ① 既存の実ファイルがあれば .bak に退避（安全策）
-  if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-    mv "$dst" "$dst.bak"
-    echo "退避: $dst → $dst.bak"
+deploy() {
+  label="$1"; src="$2"; dst="$3"
+
+  if [ ! -e "$src" ]; then
+    skip "$label : リポジトリに $src が無いので飛ばします"
+    return
   fi
-  # ② リンク作成（-f で古いリンクは上書き）
-  ln -sf "$src" "$dst"
-  echo "リンク: $dst → $src"
-done
 
-echo "完了！（対応表が空なら何もしていません）"
+  info "$label : $src"
+  info "       -> $dst"
+
+  # 既存を退避
+  if [ -e "$dst" ]; then
+    backup="$dst.bak-$(date +%Y%m%d-%H%M%S)"
+    info "退避: $dst -> $backup"
+    [ "$DRYRUN" -eq 0 ] && mv "$dst" "$backup"
+  fi
+
+  if [ "$DRYRUN" -eq 0 ]; then
+    mkdir -p "$(dirname "$dst")"
+    # -r はフォルダ用。ファイルでもそのまま使える。
+    cp -r "$src" "$dst"
+  fi
+  ok "$label"
+}
+
+# ==================================================================
+# nvim
+# ==================================================================
+step "nvim の設定を配置"
+deploy "nvim" "$DOTDIR/nvim" "$CONFIG_HOME/nvim"
+
+# ==================================================================
+# bash
+# ==================================================================
+step "bash の設定を配置"
+deploy ".bashrc" "$DOTDIR/bash/.bashrc" "$HOME/.bashrc"
+
+# ==================================================================
+# PowerShell（Linux に pwsh を入れている場合だけ）
+# ==================================================================
+step "PowerShell プロファイルを配置"
+if command -v pwsh >/dev/null 2>&1; then
+  deploy "PowerShell profile" \
+    "$DOTDIR/powershell/profile.ps1" \
+    "$CONFIG_HOME/powershell/Microsoft.PowerShell_profile.ps1"
+else
+  skip "pwsh が入っていないので飛ばします"
+fi
+
+# ==================================================================
+# VSCode（インストール済みの場合だけ）
+# ==================================================================
+step "VSCode の設定を配置"
+if [ -d "$CONFIG_HOME/Code/User" ]; then
+  deploy "VSCode settings.json" "$DOTDIR/vscode/settings.json" "$CONFIG_HOME/Code/User/settings.json"
+else
+  skip "VSCode が見つからないので飛ばします"
+fi
+
+# ==================================================================
+# 完了メッセージ
+# ==================================================================
+echo ""
+echo "=== 完了 ==="
+echo "・上書き前のファイルは *.bak-日付 という名前で同じ場所に残しています"
+echo "・新しいターミナルを開くと設定が反映されます"
+echo "・設定を変更したあとは  bash sync.sh  でリポジトリに取り込んでください"

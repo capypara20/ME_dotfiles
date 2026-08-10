@@ -1,0 +1,146 @@
+{
+    "buckets":  [
+                    {
+                        "Name":  "main",
+                        "Source":  "https://github.com/ScoopInstaller/Main"
+                    },
+                    {
+                        "Name":  "extras",
+                        "Source":  "https://github.com/ScoopInstaller/Extras"
+                    },
+                    {
+                        "Name":  "nerd-fonts",
+                        "Source":  "https://github.com/matthewjberger/scoop-nerd-fonts"
+                    },
+                    {
+                        "Name":  "java",
+                        "Source":  "https://github.com/ScoopInstaller/Java"
+                    },
+                    {
+                        "Name":  "psmux",
+                        "Source":  "https://github.com/psmux/scoop-psmux"
+                    }
+                ],
+    "apps":  [
+                 {
+                     "Name":  "7zip",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "btop",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "curl",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "dark",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "draw.io",
+                     "Source":  "extras",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "fd",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "gcc",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "gh",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "ghidra",
+                     "Source":  "extras",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "git",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "grep",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "imhex",
+                     "Source":  "extras",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "neovim",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "nvm",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "openjdk21",
+                     "Source":  "java",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "openssh",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "psmux",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "pwsh",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "python",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "ripgrep",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "rustup",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "sed",
+                     "Source":  "main",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "thunderbird",
+                     "Source":  "extras",
+                     "Info":  ""
+                 },
+                 {
+                     "Name":  "touch",
+                     "Source":  "main",
+                     "Info":  ""
+                 }
+             ]
+}
