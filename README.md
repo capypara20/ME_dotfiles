@@ -12,7 +12,7 @@ nvim・PowerShell・VSCode・scoop の環境が揃う。
 | フォルダ | 中身 | 配置先（Windows） | 配置先（Linux） |
 |---|---|---|---|
 | `nvim/` | Neovim の設定（LazyVim） | `%XDG_CONFIG_HOME%\nvim` | `~/.config/nvim` |
-| `powershell/` | PowerShell プロファイル | `Documents\PowerShell\...profile.ps1`<br>`Documents\WindowsPowerShell\...profile.ps1` | `~/.config/powershell/...profile.ps1` |
+| `powershell/` | PowerShell プロファイル | `%XDG_CONFIG_HOME%\powershell\profile.ps1`（本体）<br>`Documents\PowerShell\...profile.ps1`（スタブ）<br>`Documents\WindowsPowerShell\...profile.ps1`（スタブ） | `~/.config/powershell/profile.ps1` |
 | `vscode/` | VSCode の `settings.json` | `%APPDATA%\Code\User\settings.json` | `~/.config/Code/User/settings.json` |
 | `scoop/` | scoop で入れるアプリ一覧 | （install.ps1 が読んで一括インストール） | — |
 | `wterminal/` | Windows Terminal の `settings.json` | `%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\` | —（Windows 専用） |
@@ -148,9 +148,27 @@ git pull
 全PCで共通にしたくない設定（会社PCのプロキシ、そのPCにしか無いパスなど）は、
 **`profile.local.ps1`** に書く。`.gitignore` 済みなので Git には入らない。
 
-- 置き場所: PowerShell プロファイルと同じフォルダ
-  （例: `Documents\PowerShell\profile.local.ps1`）
+- 置き場所: `~/.config/powershell/profile.local.ps1`（本体と同じフォルダ）
 - `profile.ps1` の最後で自動的に読み込まれる
+
+### PowerShell プロファイルが3枚ある理由
+
+Windows PowerShell 5.1 と PowerShell 7 (pwsh) では `$PROFILE` の場所が違う。
+両方に本体をコピーすると同じ内容が2枚でき、片方だけ古くなって
+「pwsh でだけ設定が効かない」事故が起きる。そこで**本体は1枚だけ**にした。
+
+```
+ ~/.config/powershell/profile.ps1        ← 本体（編集するのはここだけ）
+        ▲ 読む                ▲ 読む
+        │                     │
+ Documents\WindowsPowerShell\  Documents\PowerShell\
+   Microsoft.PowerShell_profile.ps1（スタブ・install.ps1 が自動生成）
+        =                     =
+   Windows PowerShell 5.1     PowerShell 7 (pwsh)
+```
+
+- スタブは編集しないこと。`install.ps1` を流すと上書きされる
+- `sync.ps1` はスタブを取り込まない（取り込むとリポジトリの設定が消えるため）
 
 ---
 

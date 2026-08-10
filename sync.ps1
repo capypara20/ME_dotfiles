@@ -63,29 +63,42 @@ Collect "nvim" (Join-Path $ConfigHome "nvim") (Join-Path $DotDir "nvim") $true
 
 # ==================================================================
 # PowerShell プロファイル
-#   pwsh 用 と Windows PowerShell 用の両方を調べ、
-#   中身があるもののうち「最後に編集されたもの」を採用する。
+#   本体は ~\.config\powershell\profile.ps1 の1枚だけ。
+#   Documents 配下の2つ（5.1用 / 7用）は「本体を呼ぶだけ」のスタブなので
+#   絶対に取り込まない。取り込むとリポジトリの設定が丸ごと消える。
 # ==================================================================
 Step "PowerShell プロファイルを取り込み"
-$ProfileCandidates = @(
-  (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")
-  (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
-)
-#   ただし中身が空のプロファイル（Windows が自動で作る空ファイルなど）は
-#   無視する。空のものを取り込むと、リポジトリの設定が消えてしまうため。
-$found = $ProfileCandidates |
-  Where-Object {
-    if (-not (Test-Path $_)) { return $false }
-    $raw = Get-Content -Path $_ -Raw -ErrorAction SilentlyContinue
-    return ($raw -and $raw.Trim().Length -gt 0)
-  } |
-  Sort-Object { (Get-Item $_).LastWriteTime } -Descending |
-  Select-Object -First 1
 
-if ($found) {
-  Collect "PowerShell profile" $found (Join-Path $DotDir "powershell\profile.ps1") $false
+# 中身が本物のプロファイルか判定する。
+#   × 空ファイル       … Windows が自動で作ることがある
+#   × スタブ           … 本体を dot-source するだけの十数行
+# どちらも取り込むとリポジトリ側の設定が消えるため、弾く。
+function Test-IsRealProfile($path) {
+  if (-not $path) { return $false }
+  if (-not (Test-Path $path)) { return $false }
+  $raw = Get-Content -Path $path -Raw -ErrorAction SilentlyContinue
+  if (-not $raw -or $raw.Trim().Length -eq 0) { return $false }
+  if ($raw -match '\$SharedProfile') { return $false }
+  return $true
+}
+
+$ProfileSrc = Join-Path $ConfigHome "powershell\profile.ps1"
+
+if (-not (Test-IsRealProfile $ProfileSrc)) {
+  # 旧構成のPC向けの保険。本体がまだ無ければ Documents 側から拾う。
+  $ProfileSrc = @(
+    (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")
+    (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
+  ) |
+    Where-Object { Test-IsRealProfile $_ } |
+    Sort-Object { (Get-Item $_).LastWriteTime } -Descending |
+    Select-Object -First 1
+}
+
+if ($ProfileSrc) {
+  Collect "PowerShell profile" $ProfileSrc (Join-Path $DotDir "powershell\profile.ps1") $false
 } else {
-  Skip "プロファイルが見つかりません（先に install.ps1 を実行してください）"
+  Skip "本体のプロファイルが見つかりません（空／スタブは取り込みません）"
 }
 
 # ==================================================================

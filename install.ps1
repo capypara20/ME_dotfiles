@@ -109,10 +109,22 @@ if ($SkipScoop) {
 $NvimDst = Join-Path $ConfigHome "nvim"
 
 # PowerShell プロファイル:
-#   Documents フォルダは OneDrive に移動されている場合があるので、
-#   決め打ちせず Windows に「本当の Documents はどこ？」と聞く。
-$Docs = [Environment]::GetFolderPath("MyDocuments")
-$ProfileTargets = @(
+#   Windows PowerShell 5.1 と PowerShell 7 では $PROFILE の場所が違う。
+#   両方に本体をコピーすると同じ内容が2枚でき、片方だけ古くなって
+#   「pwsh でだけ設定が効かない」事故が起きる。
+#   そこで本体は1枚だけ置き、$PROFILE の場所には「本体を読むだけ」の
+#   スタブを置く。
+#
+#     ~\.config\powershell\profile.ps1        ← 本体（中身はここだけ）
+#            ↑ 読む              ↑ 読む
+#     Documents\WindowsPowerShell\   Documents\PowerShell\
+#       Microsoft.PowerShell_profile.ps1（スタブ）
+#
+#   Documents は OneDrive に移動されている場合があるので、決め打ちせず
+#   Windows に「本当の Documents はどこ？」と聞く。
+$Docs        = [Environment]::GetFolderPath("MyDocuments")
+$ProfileMain = Join-Path $ConfigHome "powershell\profile.ps1"
+$ProfileStubs = @(
   (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")         # PowerShell 7 (pwsh)
   (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")  # Windows PowerShell 5.1
 )
@@ -170,8 +182,44 @@ Step "nvim の設定を配置"
 Deploy "nvim" (Join-Path $DotDir "nvim") $NvimDst $true
 
 Step "PowerShell プロファイルを配置"
-foreach ($t in $ProfileTargets) {
-  Deploy "PowerShell profile" (Join-Path $DotDir "powershell\profile.ps1") $t $false
+
+# (a) 本体を ~\.config\powershell\profile.ps1 へ
+Deploy "PowerShell profile 本体" (Join-Path $DotDir "powershell\profile.ps1") $ProfileMain $false
+
+# (b) 5.1 用 / 7 用の $PROFILE には「本体を読むだけ」のスタブを置く
+$StubBody = @'
+# ==================================================================
+# このファイルは「本体を呼び出すだけ」のファイルです。
+#
+# ★ 設定を書き足すときは、下の本体のほうを編集してください ★
+#     本体: ~\.config\powershell\profile.ps1
+#
+# Windows PowerShell 5.1 と PowerShell 7 (pwsh) では $PROFILE の
+# 置き場所が違うため、両方からこの1行で同じ本体を読み込んでいます。
+#
+# ※ このファイルは install.ps1 が自動生成します。直接編集しないでください。
+# ==================================================================
+
+$SharedProfile = Join-Path $HOME ".config\powershell\profile.ps1"
+if (Test-Path $SharedProfile) {
+  . $SharedProfile
+} else {
+  Write-Warning "プロファイル本体が見つかりません: $SharedProfile"
+}
+'@
+
+foreach ($t in $ProfileStubs) {
+  Info "PowerShell profile スタブ -> $t"
+  Backup-IfExists $t
+  if (-not $DryRun) {
+    $parent = Split-Path -Parent $t
+    if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
+    # 日本語コメントを含むので UTF-8 の「BOM付き」で保存する。
+    # BOM が無いと Windows PowerShell 5.1 が Shift-JIS と誤読して構文エラーになる。
+    $enc = New-Object System.Text.UTF8Encoding($true)
+    [System.IO.File]::WriteAllText($t, $StubBody, $enc)
+  }
+  Ok "PowerShell profile スタブ"
 }
 
 Step "VSCode の設定を配置"

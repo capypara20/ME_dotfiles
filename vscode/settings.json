@@ -2,7 +2,7 @@
     "claudeCode.preferredLocation": "panel",
     "workbench.iconTheme": "vs-nomo-dark",
     "explorer.compactFolders": false,
-    "explorer.excludeGitIgnore": true,
+    "explorer.excludeGitIgnore": false,
     "explorer.fileNesting.enabled": true,
     "hediet.vscode-drawio.resizeImages": null,
     "glassit.alpha": 250,
