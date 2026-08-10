@@ -70,6 +70,13 @@ deploy() {
 step "nvim の設定を配置"
 deploy "nvim" "$DOTDIR/nvim" "$CONFIG_HOME/nvim"
 
+# WSL では IME を切るのに Windows の zenhan.exe を呼ぶ。
+# Linux 側へコピーされた exe は実行権限が落ちていることがあるので付け直す。
+if [ "$DRYRUN" -eq 0 ] && [ -d "$CONFIG_HOME/nvim/bin" ]; then
+  chmod +x "$CONFIG_HOME"/nvim/bin/*.exe 2>/dev/null || true
+  ok "zenhan.exe に実行権限を付与"
+fi
+
 # ==================================================================
 # bash
 # ==================================================================
