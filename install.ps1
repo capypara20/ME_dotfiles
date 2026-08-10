@@ -120,6 +120,21 @@ $ProfileTargets = @(
 # VSCode
 $VscodeDst = Join-Path $env:APPDATA "Code\User\settings.json"
 
+# Windows Terminal:
+#   Store版・Preview版・非Store版で場所が違うので、候補を順に調べて
+#   「実際にフォルダがある版」に配置する。
+$WtCandidates = @(
+  (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json")
+  (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json")
+  (Join-Path $env:LOCALAPPDATA "Microsoft\Windows Terminal\settings.json")
+)
+
+# psmux（ターミナル分割ツール）
+$PsmuxDst = Join-Path $ConfigHome "psmux\psmux.conf"
+
+# Claude Code の指示書
+$ClaudeDst = Join-Path $HOME ".claude\CLAUDE.md"
+
 # --- コピー用の共通処理 ----------------------------------------------
 # 既存ファイルは消さずに、日付つきの名前へ退避してから上書きする。
 function Backup-IfExists($path) {
@@ -165,6 +180,38 @@ if (Test-Path (Split-Path -Parent $VscodeDst)) {
 } else {
   Skip "VSCode が見つからないので飛ばします（$VscodeDst）"
 }
+
+Step "Windows Terminal の設定を配置"
+# 判定は「settings.json が実際にあるか」で行う。
+# フォルダの有無で判定すると、WSL のプロファイル断片が置かれる
+# 「Local\Microsoft\Windows Terminal」を誤って版と見なしてしまうため。
+$wtTargets = @($WtCandidates | Where-Object { Test-Path $_ })
+
+if ($wtTargets.Count -eq 0) {
+  # 一度も起動していないPCには settings.json が無い。
+  # その場合は Store 版のフォルダがあれば、そこに新規作成する。
+  $wtStoreDir = Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
+  if (Test-Path $wtStoreDir) {
+    $wtTargets = @((Join-Path $wtStoreDir "settings.json"))
+  }
+}
+
+foreach ($wt in $wtTargets) {
+  Deploy "Windows Terminal settings.json" (Join-Path $DotDir "wterminal\settings.json") $wt $false
+}
+
+if ($wtTargets.Count -eq 0) {
+  Skip "Windows Terminal が見つからないので飛ばします"
+} else {
+  Info "※ Windows Terminal を開いたままだと、閉じるときに古い設定へ戻ることがあります"
+  Info "   反映されないときは Windows Terminal を再起動してください"
+}
+
+Step "psmux の設定を配置"
+Deploy "psmux.conf" (Join-Path $DotDir "psmux\psmux.conf") $PsmuxDst $false
+
+Step "Claude Code の指示書を配置"
+Deploy "CLAUDE.md" (Join-Path $DotDir "claude\CLAUDE.md") $ClaudeDst $false
 
 # ==================================================================
 # 完了メッセージ

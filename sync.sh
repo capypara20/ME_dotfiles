@@ -83,6 +83,22 @@ step "VSCode の設定を取り込み"
 collect "VSCode settings.json" "$CONFIG_HOME/Code/User/settings.json" "$DOTDIR/vscode/settings.json"
 
 # ==================================================================
+# psmux
+# ==================================================================
+step "psmux の設定を取り込み"
+collect "psmux.conf" "$CONFIG_HOME/psmux/psmux.conf" "$DOTDIR/psmux/psmux.conf"
+
+# ==================================================================
+# Claude Code
+#   CLAUDE.md だけを取り込む。同じフォルダの .credentials.json などは
+#   認証情報なので絶対に含めない。
+# ==================================================================
+step "Claude Code の指示書を取り込み"
+collect "CLAUDE.md" "$HOME/.claude/CLAUDE.md" "$DOTDIR/claude/CLAUDE.md"
+
+# Windows Terminal は Windows 専用のため、ここでは扱わない。
+
+# ==================================================================
 # 完了メッセージ
 # ==================================================================
 echo ""

@@ -95,6 +95,37 @@ Step "VSCode の設定を取り込み"
 Collect "VSCode settings.json" (Join-Path $env:APPDATA "Code\User\settings.json") (Join-Path $DotDir "vscode\settings.json") $false
 
 # ==================================================================
+# Windows Terminal
+#   Store版・Preview版・非Store版のうち、実際にファイルがある版から取り込む。
+# ==================================================================
+Step "Windows Terminal の設定を取り込み"
+$WtCandidates = @(
+  (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json")
+  (Join-Path $env:LOCALAPPDATA "Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json")
+  (Join-Path $env:LOCALAPPDATA "Microsoft\Windows Terminal\settings.json")
+)
+$wtSrc = $WtCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+if ($wtSrc) {
+  Collect "Windows Terminal settings.json" $wtSrc (Join-Path $DotDir "wterminal\settings.json") $false
+} else {
+  Skip "Windows Terminal の設定が見つかりません"
+}
+
+# ==================================================================
+# psmux
+# ==================================================================
+Step "psmux の設定を取り込み"
+Collect "psmux.conf" (Join-Path $ConfigHome "psmux\psmux.conf") (Join-Path $DotDir "psmux\psmux.conf") $false
+
+# ==================================================================
+# Claude Code
+#   CLAUDE.md だけを取り込む。同じフォルダにある .credentials.json などは
+#   認証情報なので絶対に含めない。
+# ==================================================================
+Step "Claude Code の指示書を取り込み"
+Collect "CLAUDE.md" (Join-Path $HOME ".claude\CLAUDE.md") (Join-Path $DotDir "claude\CLAUDE.md") $false
+
+# ==================================================================
 # scoop のアプリ一覧
 #   scoop export はバージョン番号まで書き出すが、それを残すと
 #   新しいPCで「古いバージョン」を入れようとしてしまう。

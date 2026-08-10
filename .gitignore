@@ -8,6 +8,14 @@
 *.local.lua
 local.gitconfig
 
+# 認証情報（絶対にコミットしない。念のための保険）
+.credentials.json
+*credentials*
+*.pem
+*.key
+id_rsa*
+.env
+
 # OS が勝手に作るファイル
 Thumbs.db
 desktop.ini

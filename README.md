@@ -15,6 +15,9 @@ nvim・PowerShell・VSCode・scoop の環境が揃う。
 | `powershell/` | PowerShell プロファイル | `Documents\PowerShell\...profile.ps1`<br>`Documents\WindowsPowerShell\...profile.ps1` | `~/.config/powershell/...profile.ps1` |
 | `vscode/` | VSCode の `settings.json` | `%APPDATA%\Code\User\settings.json` | `~/.config/Code/User/settings.json` |
 | `scoop/` | scoop で入れるアプリ一覧 | （install.ps1 が読んで一括インストール） | — |
+| `wterminal/` | Windows Terminal の `settings.json` | `%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\` | —（Windows 専用） |
+| `psmux/` | `psmux.conf` | `%XDG_CONFIG_HOME%\psmux\` | `~/.config/psmux/` |
+| `claude/` | Claude Code の `CLAUDE.md` | `~\.claude\CLAUDE.md` | `~/.claude/CLAUDE.md` |
 | `bash/` | `.bashrc` | — | `~/.bashrc` |
 
 ---
@@ -35,7 +38,13 @@ dotfiles/
 │   └─ settings.json
 ├─ scoop/
 │   └─ scoop-apps.json
-├─ bash/
+├─ wterminal/            ← Windows 専用
+│   └─ settings.json
+├─ psmux/
+│   └─ psmux.conf
+├─ claude/
+│   └─ CLAUDE.md
+├─ bash/                 ← Linux 専用
 │   └─ .bashrc
 │
 ├─ install.ps1 / install.sh   ← リポジトリ → PC へ配置する
@@ -155,3 +164,11 @@ git pull
 - **scoop のアプリ一覧はバージョンを含めない。** 新しいPCでは常に最新版が入る。
   グローバルインストール（管理者権限が必要なもの）は一覧から除外している。
 - **フォントは scoop で管理しない。** Nerd Font は手動でインストールする方針。
+  Windows Terminal の設定には `RobotoMono Nerd Font` が入っているので、
+  フォントを入れていないPCでは文字が □ になる。先にフォントを入れること。
+- **Windows Terminal は開いたまま install すると設定が戻ることがある。**
+  終了時に、起動中に保持していた内容で書き戻されるため。
+  反映されないときは Windows Terminal を再起動する。
+- **Claude Code は `CLAUDE.md` だけを管理している。**
+  同じ `~/.claude/` にある `.credentials.json` は認証情報なので、
+  スクリプトは意図的に触らない。GitHub にも上げてはいけない。
