@@ -1,0 +1,28 @@
+# ==================================================================
+# 改行コードの固定
+#
+# Windows と Linux では改行コードが違う（CRLF と LF）。
+# Git は自動変換することがあるが、それを放置すると
+# 「Linux で install.sh が動かない」といった事故が起きるため、
+# ここで明示的に決めておく。
+# ==================================================================
+
+# 既定: リポジトリにも作業フォルダにも LF で置く
+* text=auto eol=lf
+
+# シェルスクリプトは必ず LF。
+# CRLF が混ざると Linux で「bad interpreter」等のエラーになる。
+*.sh text eol=lf
+
+# PowerShell は Windows 用なので CRLF にしておく。
+# （中身は UTF-8 BOM 付き。BOM が無いと PS 5.1 が日本語を誤読する）
+*.ps1 text eol=crlf
+
+# バイナリは改行変換してはいけない（壊れる）
+*.exe binary
+*.dll binary
+*.ttf binary
+*.otf binary
+*.png binary
+*.jpg binary
+*.ico binary
