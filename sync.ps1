@@ -63,15 +63,15 @@ Collect "nvim" (Join-Path $ConfigHome "nvim") (Join-Path $DotDir "nvim") $true
 
 # ==================================================================
 # PowerShell プロファイル
-#   本体は ~\.config\powershell\profile.ps1 の1枚だけ。
-#   Documents 配下の2つ（5.1用 / 7用）は「本体を呼ぶだけ」のスタブなので
-#   絶対に取り込まない。取り込むとリポジトリの設定が丸ごと消える。
+#   実体は Documents 配下に2枚ある（5.1用 / 7用）。
+#   どちらを編集しても拾えるよう、更新日時が新しい方を取り込む。
+#   2枚の中身が食い違っている場合は警告を出す。
 # ==================================================================
 Step "PowerShell プロファイルを取り込み"
 
 # 中身が本物のプロファイルか判定する。
 #   × 空ファイル       … Windows が自動で作ることがある
-#   × スタブ           … 本体を dot-source するだけの十数行
+#   × 旧構成のスタブ   … 本体を dot-source するだけの十数行
 # どちらも取り込むとリポジトリ側の設定が消えるため、弾く。
 function Test-IsRealProfile($path) {
   if (-not $path) { return $false }
@@ -82,11 +82,32 @@ function Test-IsRealProfile($path) {
   return $true
 }
 
-$ProfileSrc = Join-Path $ConfigHome "powershell\profile.ps1"
+$ProfileCandidates = @(
+  @(
+    (Join-Path $Docs "PowerShell\profile.ps1")          # PowerShell 7 (pwsh)
+    (Join-Path $Docs "WindowsPowerShell\profile.ps1")   # Windows PowerShell 5.1
+  ) | Where-Object { Test-IsRealProfile $_ }
+)
 
-if (-not (Test-IsRealProfile $ProfileSrc)) {
-  # 旧構成のPC向けの保険。本体がまだ無ければ Documents 側から拾う。
+# 2枚あって中身が違う場合、片方の編集内容が黙って捨てられてしまうので知らせる。
+if ($ProfileCandidates.Count -ge 2) {
+  $hashes = @($ProfileCandidates |
+    ForEach-Object { (Get-FileHash -Path $_ -Algorithm SHA256).Hash } |
+    Select-Object -Unique)
+  if ($hashes.Count -gt 1) {
+    Write-Warning "5.1 用と 7 用で内容が違います。更新日時が新しい方を取り込みます。"
+    Write-Warning "  コミットしたあと .\install.ps1 -SkipScoop で両方を揃えてください"
+  }
+}
+
+$ProfileSrc = $ProfileCandidates |
+  Sort-Object { (Get-Item $_).LastWriteTime } -Descending |
+  Select-Object -First 1
+
+if (-not $ProfileSrc) {
+  # 旧構成（本体1枚＋スタブ2枚）のPC向けの保険。
   $ProfileSrc = @(
+    (Join-Path $ConfigHome "powershell\profile.ps1")
     (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")
     (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
   ) |
@@ -98,7 +119,7 @@ if (-not (Test-IsRealProfile $ProfileSrc)) {
 if ($ProfileSrc) {
   Collect "PowerShell profile" $ProfileSrc (Join-Path $DotDir "powershell\profile.ps1") $false
 } else {
-  Skip "本体のプロファイルが見つかりません（空／スタブは取り込みません）"
+  Skip "プロファイルが見つかりません（空／旧スタブは取り込みません）"
 }
 
 # ==================================================================

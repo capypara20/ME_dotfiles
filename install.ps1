@@ -109,25 +109,26 @@ if ($SkipScoop) {
 $NvimDst = Join-Path $ConfigHome "nvim"
 
 # PowerShell プロファイル:
-#   Windows PowerShell 5.1 と PowerShell 7 では $PROFILE の場所が違う。
-#   両方に本体をコピーすると同じ内容が2枚でき、片方だけ古くなって
-#   「pwsh でだけ設定が効かない」事故が起きる。
-#   そこで本体は1枚だけ置き、$PROFILE の場所には「本体を読むだけ」の
-#   スタブを置く。
+#   Windows PowerShell 5.1 と PowerShell 7 では $PROFILE の場所が違うので、
+#   両方の CurrentUserAllHosts（= profile.ps1）に同じものをコピーする。
 #
-#     ~\.config\powershell\profile.ps1        ← 本体（中身はここだけ）
-#            ↑ 読む              ↑ 読む
+#     dotfiles\powershell\profile.ps1     ← 編集するのはここだけ
+#            ├─────────────────────┐
 #     Documents\WindowsPowerShell\   Documents\PowerShell\
-#       Microsoft.PowerShell_profile.ps1（スタブ）
+#          profile.ps1                    profile.ps1
+#       = Windows PowerShell 5.1       = PowerShell 7 (pwsh)
 #
 #   Documents は OneDrive に移動されている場合があるので、決め打ちせず
 #   Windows に「本当の Documents はどこ？」と聞く。
-$Docs        = [Environment]::GetFolderPath("MyDocuments")
-$ProfileMain = Join-Path $ConfigHome "powershell\profile.ps1"
-$ProfileStubs = @(
-  (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")         # PowerShell 7 (pwsh)
-  (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")  # Windows PowerShell 5.1
-)
+$Docs = [Environment]::GetFolderPath("MyDocuments")
+
+# Windows PowerShell 5.1 は Windows に最初から入っているので必ず配置する。
+$ProfileTargets = @( (Join-Path $Docs "WindowsPowerShell\profile.ps1") )
+
+# PowerShell 7 (pwsh) は入っていないPCもあるので、あるときだけ配置する。
+if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+  $ProfileTargets += (Join-Path $Docs "PowerShell\profile.ps1")
+}
 
 # VSCode
 $VscodeDst = Join-Path $env:APPDATA "Code\User\settings.json"
@@ -183,43 +184,41 @@ Deploy "nvim" (Join-Path $DotDir "nvim") $NvimDst $true
 
 Step "PowerShell プロファイルを配置"
 
-# (a) 本体を ~\.config\powershell\profile.ps1 へ
-Deploy "PowerShell profile 本体" (Join-Path $DotDir "powershell\profile.ps1") $ProfileMain $false
-
-# (b) 5.1 用 / 7 用の $PROFILE には「本体を読むだけ」のスタブを置く
-$StubBody = @'
-# ==================================================================
-# このファイルは「本体を呼び出すだけ」のファイルです。
-#
-# ★ 設定を書き足すときは、下の本体のほうを編集してください ★
-#     本体: ~\.config\powershell\profile.ps1
-#
-# Windows PowerShell 5.1 と PowerShell 7 (pwsh) では $PROFILE の
-# 置き場所が違うため、両方からこの1行で同じ本体を読み込んでいます。
-#
-# ※ このファイルは install.ps1 が自動生成します。直接編集しないでください。
-# ==================================================================
-
-$SharedProfile = Join-Path $HOME ".config\powershell\profile.ps1"
-if (Test-Path $SharedProfile) {
-  . $SharedProfile
-} else {
-  Write-Warning "プロファイル本体が見つかりません: $SharedProfile"
+# (a) 5.1 用 / 7 用の profile.ps1 へ同じものをコピーする。
+#     リポジトリ側は UTF-8 BOM付き（.gitattributes で固定）なので、
+#     そのままコピーすれば 5.1 でも日本語コメントが化けない。
+if (-not (Get-Command pwsh -ErrorAction SilentlyContinue)) {
+  Skip "pwsh が無いので PowerShell 7 用は飛ばします"
 }
-'@
+foreach ($t in $ProfileTargets) {
+  Deploy "PowerShell profile" (Join-Path $DotDir "powershell\profile.ps1") $t $false
+}
 
-foreach ($t in $ProfileStubs) {
-  Info "PowerShell profile スタブ -> $t"
-  Backup-IfExists $t
-  if (-not $DryRun) {
-    $parent = Split-Path -Parent $t
-    if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
-    # 日本語コメントを含むので UTF-8 の「BOM付き」で保存する。
-    # BOM が無いと Windows PowerShell 5.1 が Shift-JIS と誤読して構文エラーになる。
-    $enc = New-Object System.Text.UTF8Encoding($true)
-    [System.IO.File]::WriteAllText($t, $StubBody, $enc)
+# (b) 旧構成（本体1枚＋スタブ2枚）の後片付け。
+#     残したままだと profile.ps1 と一緒に二重に読み込まれてしまう。
+$OldStubs = @(
+  (Join-Path $Docs "PowerShell\Microsoft.PowerShell_profile.ps1")
+  (Join-Path $Docs "WindowsPowerShell\Microsoft.PowerShell_profile.ps1")
+)
+foreach ($old in $OldStubs) {
+  if (-not (Test-Path $old)) { continue }
+  $raw = Get-Content -Path $old -Raw -ErrorAction SilentlyContinue
+  if ($raw -match '\$SharedProfile') {
+    # install.ps1 が昔つくったスタブ。退避してよい
+    Info "旧スタブを退避します: $old"
+    Backup-IfExists $old
+  } else {
+    # 手書きの設定が入っているかもしれないので触らない
+    Write-Warning "自動生成でないファイルが残っています。中身を確認して手で消してください: $old"
   }
-  Ok "PowerShell profile スタブ"
+}
+
+# 旧本体（~\.config\powershell\profile.ps1）も退避する。
+# ※ 同じフォルダの profile.local.ps1（このPC専用の設定）には絶対に触らない。
+$OldMain = Join-Path $ConfigHome "powershell\profile.ps1"
+if (Test-Path $OldMain) {
+  Info "旧本体を退避します: $OldMain"
+  Backup-IfExists $OldMain
 }
 
 Step "VSCode の設定を配置"

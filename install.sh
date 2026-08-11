@@ -88,9 +88,10 @@ deploy ".bashrc" "$DOTDIR/bash/.bashrc" "$HOME/.bashrc"
 # ==================================================================
 step "PowerShell プロファイルを配置"
 if command -v pwsh >/dev/null 2>&1; then
+  # Windows 側と同じく CurrentUserAllHosts（= profile.ps1）に置く
   deploy "PowerShell profile" \
     "$DOTDIR/powershell/profile.ps1" \
-    "$CONFIG_HOME/powershell/Microsoft.PowerShell_profile.ps1"
+    "$CONFIG_HOME/powershell/profile.ps1"
 else
   skip "pwsh が入っていないので飛ばします"
 fi

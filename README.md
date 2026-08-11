@@ -12,7 +12,7 @@ nvim・PowerShell・VSCode・scoop の環境が揃う。
 | フォルダ | 中身 | 配置先（Windows） | 配置先（Linux） |
 |---|---|---|---|
 | `nvim/` | Neovim の設定（LazyVim） | `%XDG_CONFIG_HOME%\nvim` | `~/.config/nvim` |
-| `powershell/` | PowerShell プロファイル | `%XDG_CONFIG_HOME%\powershell\profile.ps1`（本体）<br>`Documents\PowerShell\...profile.ps1`（スタブ）<br>`Documents\WindowsPowerShell\...profile.ps1`（スタブ） | `~/.config/powershell/profile.ps1` |
+| `powershell/` | PowerShell プロファイル | `Documents\WindowsPowerShell\profile.ps1`（5.1用）<br>`Documents\PowerShell\profile.ps1`（7用・pwsh があるPCだけ） | `~/.config/powershell/profile.ps1` |
 | `vscode/` | VSCode の `settings.json` | `%APPDATA%\Code\User\settings.json` | `~/.config/Code/User/settings.json` |
 | `scoop/` | scoop で入れるアプリ一覧 | （install.ps1 が読んで一括インストール） | — |
 | `wterminal/` | Windows Terminal の `settings.json` | `%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_*\LocalState\` | —（Windows 専用） |
@@ -148,27 +148,46 @@ git pull
 全PCで共通にしたくない設定（会社PCのプロキシ、そのPCにしか無いパスなど）は、
 **`profile.local.ps1`** に書く。`.gitignore` 済みなので Git には入らない。
 
-- 置き場所: `~/.config/powershell/profile.local.ps1`（本体と同じフォルダ）
+- 置き場所: `~/.config/powershell/profile.local.ps1`（5.1 用と 7 用で共通の1か所）
 - `profile.ps1` の最後で自動的に読み込まれる
 
-### PowerShell プロファイルが3枚ある理由
+### PowerShell プロファイルが2枚ある理由
 
-Windows PowerShell 5.1 と PowerShell 7 (pwsh) では `$PROFILE` の場所が違う。
-両方に本体をコピーすると同じ内容が2枚でき、片方だけ古くなって
-「pwsh でだけ設定が効かない」事故が起きる。そこで**本体は1枚だけ**にした。
+Windows PowerShell 5.1 と PowerShell 7 (pwsh) では `$PROFILE` の場所が違うため、
+両方の `CurrentUserAllHosts`（= `profile.ps1`）に同じものを配る。
 
 ```
- ~/.config/powershell/profile.ps1        ← 本体（編集するのはここだけ）
-        ▲ 読む                ▲ 読む
-        │                     │
- Documents\WindowsPowerShell\  Documents\PowerShell\
-   Microsoft.PowerShell_profile.ps1（スタブ・install.ps1 が自動生成）
-        =                     =
-   Windows PowerShell 5.1     PowerShell 7 (pwsh)
+ dotfiles/powershell/profile.ps1      ← 編集するのはここだけ（Git 管理）
+        │ install.ps1 がコピー
+        ├──────────────────────┐
+ Documents\WindowsPowerShell\    Documents\PowerShell\
+      profile.ps1                     profile.ps1
+        =                              =
+  Windows PowerShell 5.1          PowerShell 7 (pwsh)
+                                  ※ pwsh があるPCだけ
 ```
 
-- スタブは編集しないこと。`install.ps1` を流すと上書きされる
-- `sync.ps1` はスタブを取り込まない（取り込むとリポジトリの設定が消えるため）
+- 実体が2枚あるので、片方を直接編集したら `sync.ps1` → `install.ps1` の順に流して
+  両方を揃えること。`sync.ps1` は**更新日時が新しい方**を取り込み、
+  2枚の中身が違うときは警告を出す
+- ファイル名を `profile.ps1`（AllHosts）にしているので、VSCode の PowerShell 拡張など
+  コンソール以外のホストからも読まれる。色付き3行プロンプトの部分だけは
+  `$Host.Name -eq 'ConsoleHost'` で囲ってあり、ISE などでは無効になる
+
+### プロンプトの見かた
+
+```
+14:41:44 DESKTOP-0HEJ4UD@10.152.100.214 100%+ pwsh7.6
+C:\Users\capypara20\.config\nvim  (main*)
+(ｯ･ω･)ｯ
+```
+
+| 場所 | 意味 |
+|---|---|
+| 1行目 | 時刻 / マシン名@IP / バッテリー残量（`+` は充電中） |
+| 1行目の末尾 | 今の PowerShell の種類。`pwsh7.6` = PowerShell 7（青）、`PS5.1` = Windows PowerShell（橙） |
+| 2行目 | 今いるフォルダ / Git リポジトリなら `(ブランチ名)`。`*` は未コミットの変更あり |
+| 3行目 | 顔文字。直前のコマンドが失敗したときだけ赤くなる |
 
 ---
 

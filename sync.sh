@@ -73,7 +73,7 @@ collect ".bashrc" "$HOME/.bashrc" "$DOTDIR/bash/.bashrc"
 # ==================================================================
 step "PowerShell プロファイルを取り込み"
 collect "PowerShell profile" \
-  "$CONFIG_HOME/powershell/Microsoft.PowerShell_profile.ps1" \
+  "$CONFIG_HOME/powershell/profile.ps1" \
   "$DOTDIR/powershell/profile.ps1"
 
 # ==================================================================
