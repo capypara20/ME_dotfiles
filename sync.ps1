@@ -180,7 +180,10 @@ if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     ForEach-Object { [ordered]@{ Name = $_.Name; Source = $_.Source; Info = "" } })
 
   $out = [ordered]@{ buckets = $buckets; apps = $apps }
-  $json = $out | ConvertTo-Json -Depth 5
+  # ConvertTo-Json は Windows では改行を CRLF で出すが、.gitattributes は
+  # JSON を LF と決めているため、そのままだと git が毎回
+  # 「CRLF will be replaced by LF」と警告する。ここで LF に揃えておく。
+  $json = ($out | ConvertTo-Json -Depth 5) -replace "`r`n", "`n"
 
   $AppsJson = Join-Path $DotDir "scoop\scoop-apps.json"
   Info "アプリ $($apps.Count) 個 / バケット $($buckets.Count) 個"

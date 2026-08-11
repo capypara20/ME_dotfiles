@@ -1,14 +1,214 @@
 {
-    "claudeCode.preferredLocation": "panel",
-    "workbench.iconTheme": "vs-nomo-dark",
-    "explorer.compactFolders": false,
-    "explorer.excludeGitIgnore": false,
-    "explorer.fileNesting.enabled": true,
-    "hediet.vscode-drawio.resizeImages": null,
-    "glassit.alpha": 250,
-    "explorer.confirmPasteNative": false,
-    "security.promptForLocalFileProtocolHandling": false,
-    "extensions.experimental.affinity": {
-        "asvetliakov.vscode-neovim": 1
-    }
+	// =====================================================================
+	// ローカル固有の設定（リモート側には無かったもの）
+	// =====================================================================
+	"explorer.fileNesting.enabled": true,
+	"security.promptForLocalFileProtocolHandling": false,
+	// タブを切り替えてもエクスプローラーを追従させない
+	"explorer.autoReveal": false,
+
+	// =====================================================================
+	// ここから下はリモート版の設定（preview の 15 行目以降）
+	// =====================================================================
+	"workbench.colorCustomizations": {
+		// === 背景系（全体的に紫チック） ===
+		"editor.background": "#2A1035",
+		"sideBar.background": "#231030",
+		"sideBar.foreground": "#D4C4DE",
+		"sideBar.border": "#5E2D73",
+		"activityBar.background": "#1E0B28",
+		"activityBar.foreground": "#E95420",
+		"activityBar.activeBackground": "#3D1054",
+		"activityBar.activeBorder": "#E95420",
+		"panel.background": "#231030",
+		"panel.border": "#5E2D73",
+		"terminal.background": "#231030",
+		"terminal.foreground": "#D4C4DE",
+		"titleBar.activeBackground": "#1E0B28",
+		"titleBar.activeForeground": "#D4C4DE",
+		"titleBar.border": "#5E2D73",
+		"statusBar.background": "#E95420",
+		"statusBar.foreground": "#FFF",
+		"statusBar.debuggingBackground": "#FF7043",
+		"statusBar.noFolderBackground": "#772953",
+		// === タブ ===
+		"editorGroupHeader.tabsBackground": "#231030",
+		"editorGroupHeader.tabsBorder": "#5E2D73",
+		"tab.activeBackground": "#3D1054",
+		"tab.activeForeground": "#FFF",
+		"tab.activeBorderTop": "#E95420",
+		"tab.inactiveBackground": "#271335",
+		"tab.inactiveForeground": "#B090C0",
+		"tab.border": "#2A1035",
+		"tab.hoverBackground": "#3D105480",
+		// === エディタ ===
+		"editor.foreground": "#E0D0EA",
+		"editor.selectionBackground": "#A855F740",
+		"editor.lineHighlightBackground": "#3D105440",
+		"editorLineNumber.foreground": "#6B3D80",
+		"editorLineNumber.activeForeground": "#E95420",
+		"editorCursor.foreground": "#E95420",
+		"editorBracketMatch.border": "#E95420",
+		"editorBracketMatch.background": "#E9542025",
+		"editorIndentGuide.background1": "#3D105460",
+		"editorIndentGuide.activeBackground1": "#5E2D7380",
+		"editorWidget.background": "#271335",
+		"editorWidget.border": "#5E2D73",
+		"editorSuggestWidget.background": "#271335",
+		"editorSuggestWidget.border": "#5E2D73",
+		"editorSuggestWidget.selectedBackground": "#3D1054",
+		"editorHoverWidget.background": "#271335",
+		"editorHoverWidget.border": "#5E2D73",
+		"peekView.border": "#E95420",
+		"peekViewEditor.background": "#231030",
+		"peekViewResult.background": "#1E0B28",
+		// === リスト・ウィジェット ===
+		"list.activeSelectionBackground": "#3D1054",
+		"list.activeSelectionForeground": "#FFF",
+		"list.hoverBackground": "#2A103580",
+		"list.focusHighlightForeground": "#FF7043",
+		"list.inactiveSelectionBackground": "#33143D",
+		"focusBorder": "#E9542080",
+		// === 入力・ドロップダウン ===
+		"input.background": "#231030",
+		"input.border": "#5E2D73",
+		"input.foreground": "#E0D0EA",
+		"input.placeholderForeground": "#9A7BA8",
+		"dropdown.background": "#231030",
+		"dropdown.border": "#5E2D73",
+		// === コマンドパレット ===
+		"quickInput.background": "#271335",
+		"quickInput.foreground": "#D4C4DE",
+		"quickInputList.focusBackground": "#3D1054",
+		// === バッジ ===
+		"badge.background": "#E95420",
+		"badge.foreground": "#FFF",
+		// === スクロールバー ===
+		"scrollbarSlider.background": "#5E2D7350",
+		"scrollbarSlider.hoverBackground": "#E9542050",
+		"scrollbarSlider.activeBackground": "#E9542080",
+		// === ボーダー ===
+		"editorGroup.border": "#5E2D73",
+		"editorGroup.dropBackground": "#E9542030",
+		// === ミニマップ・ブレッドクラム ===
+		"breadcrumb.background": "#231030",
+		"breadcrumb.foreground": "#B090C0",
+		"breadcrumb.focusForeground": "#E95420",
+		// === 通知 ===
+		"notifications.background": "#271335",
+		"notifications.border": "#5E2D73",
+		// === Git装飾 ===
+		"gitDecoration.modifiedResourceForeground": "#E95420",
+		"gitDecoration.untrackedResourceForeground": "#A855F7",
+		"gitDecoration.deletedResourceForeground": "#FF6B6B"
+	},
+	"terminal.integrated.fontFamily": "monospace",
+	"editor.fontWeight": "600",
+	"editor.fontSize": 14,
+	"breadcrumbs.enabled": true,
+	"window.titleBarStyle": "custom",
+	"vim.insertModeKeyBindings": [
+		{
+			"before": [
+				"j",
+				"j"
+			],
+			"after": [
+				"<Esc>"
+			]
+		}
+	],
+	"vim.hlsearch": true,
+	"vim.useSystemClipboard": true,
+	"files.autoSave": "afterDelay",
+	"editor.formatOnPaste": true,
+	"editor.formatOnSave": true,
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"github.copilot.enable": {
+		"*": true,
+		"plaintext": true,
+		"markdown": true,
+		"scminput": false,
+		"html": true,
+		"python": true,
+		"rust": true,
+		"instructions": true
+	},
+	"workbench.editor.empty.hint": "hidden",
+	"git.autofetch": true,
+	"workbench.startupEditor": "none",
+	// [競合] ローカルは "vs-nomo-dark" だった
+	"workbench.iconTheme": "material-icon-theme",
+	"explorer.confirmDragAndDrop": false,
+	"github.copilot.nextEditSuggestions.enabled": true,
+	"security.workspace.trust.untrustedFiles": "open",
+	"editor.unicodeHighlight.ambiguousCharacters": false,
+	"[html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"editor.autoIndentOnPaste": true,
+	"html.format.indentInnerHtml": true,
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"editor.indentSize": "tabSize",
+	"prettier.tabWidth": 4,
+	"prettier.useTabs": true,
+	"explorer.confirmDelete": false,
+	"chat.editing.confirmEditRequestRetry": false,
+	"git.confirmSync": false,
+	"python.analysis.typeCheckingMode": "basic",
+	"editor.editContext": false,
+	// [要確認] Linux 時代のパス。Windows では見つからない
+	"markdown-pdf.styles": [
+		"/home/roze123/Developer/App/App-Fin-Track/Doc/test.css"
+	],
+	"markdown-pdf.convertOnSave": false,
+	// 自動で改行する
+	"markdown-pdf.breaks": false,
+	"markdown-pdf.mermaidServer": "https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js",
+	"[jsonc]": {
+		"editor.defaultFormatter": "vscode.json-language-features"
+	},
+	"editor.lineNumbers": "relative",
+	"workbench.editorAssociations": {
+		"*.copilotmd": "vscode.markdown.preview.editor",
+		"*.hlp": "default"
+	},
+	"rust-analyzer.check.command": "clippy",
+	// [競合] ローカルは "panel" だった
+	"claudeCode.preferredLocation": "sidebar",
+	"files.associations": {
+		"*.ps1": "powershell"
+	},
+	"chat.tools.terminal.autoApprove": {
+		"/^python3 /tmp/interactive_solver\\.py 2>&1 \\| head -80$/": {
+			"approve": true,
+			"matchCommandLine": true
+		},
+		"/^cargo new backend --name backend 2>&1$/": {
+			"approve": true,
+			"matchCommandLine": true
+		}
+	},
+	"accessibility.voice.speechLanguage": "ja-JP",
+	"accessibility.voice.autoSynthesize": "on",
+	"explorer.confirmPasteNative": false,
+	// [競合] ローカルは 250 だった
+	"glassit.alpha": 255,
+	"workbench.editor.enablePreviewFromCodeNavigation": true,
+	"explorer.compactFolders": false,
+	"rust-analyzer.inlayHints.typeHints.enable": true,
+	"rust-analyzer.inlayHints.parameterHints.enable": true,
+	"rust-analyzer.inlayHints.chainingHints.enable": true,
+	"workbench.activityBar.location": "top",
+	"editor.minimap.autohide": "scroll",
+	"chat.viewSessions.orientation": "stacked",
+	"editor.mouseWheelZoom": true,
+	"hediet.vscode-drawio.resizeImages": null,
+	"extensions.experimental.affinity": {
+		"asvetliakov.vscode-neovim": 1
+	},
+	"github.copilot.chat.agentDebugLog.fileLogging.enabled": true
 }
