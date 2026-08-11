@@ -70,30 +70,31 @@
                 "source": "Windows.Terminal.Azure"
             },
             {
+                "font": 
+                {
+                    "size": 11
+                },
                 "guid": "{574e775e-4f2a-5b96-ac1e-a2962a402336}",
                 "hidden": false,
                 "name": "PowerShell",
                 "source": "Windows.Terminal.PowershellCore"
             },
             {
-                "guid": "{398d4a22-7802-5051-8c8d-cf771177811e}",
-                "hidden": true,
-                "name": "archlinux",
-                "source": "Windows.Terminal.Wsl"
-            },
-            {
+                "colorScheme": "One Half Dark",
+                "font": 
+                {
+                    "size": 11
+                },
                 "guid": "{e6f85794-bb1c-5b02-b9a7-3465024bd9b2}",
                 "hidden": false,
                 "name": "archlinux",
                 "source": "Microsoft.WSL"
             },
             {
-                "guid": "{963ff2f7-6aed-5ce3-9d91-90d99571f53a}",
-                "hidden": true,
-                "name": "Ubuntu-24.04",
-                "source": "Windows.Terminal.Wsl"
-            },
-            {
+                "font": 
+                {
+                    "size": 11
+                },
                 "guid": "{8221283a-2e3f-59c8-a649-dbc223b12c1a}",
                 "hidden": false,
                 "name": "Ubuntu-24.04",
